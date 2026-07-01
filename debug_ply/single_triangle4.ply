@@ -1,0 +1,17 @@
+ply
+format ascii 1.0
+comment created by Gemini (Corrected for Column-major V)
+element vertex 3
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+element face 1
+property list uchar int vertex_indices
+end_header
+-0.57762 -0.29079 131.39 0.20295718 -0.51688686 -0.33271795
+-0.80161 0.37071 151.39 0.30198447  0.28052625  0.12126371
+-0.062709 0.85896 121.43 0.93145787  0.80878489  0.93519724
+3 0 1 2

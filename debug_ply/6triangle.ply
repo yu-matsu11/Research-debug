@@ -1,0 +1,26 @@
+ply
+format ascii 1.0
+comment 6 connected triangles forming a hexagonal pyramid
+element vertex 7
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+element face 6
+property list uchar int vertex_indices
+end_header
+ 0.0         0.0        0.3   0.0          0.0          1.0
+ 0.0         1.0        0.0   0.0          0.196        0.981
+ 0.866025    0.5        0.0   0.170        0.098        0.981
+ 0.866025   -0.5        0.0   0.170       -0.098        0.981
+ 0.0        -1.0        0.0   0.0         -0.196        0.981
+-0.866025   -0.5        0.0  -0.170       -0.098        0.981
+-0.866025    0.5        0.0  -0.170        0.098        0.981
+3 0 1 2
+3 0 2 3
+3 0 3 4
+3 0 4 5
+3 0 5 6
+3 0 6 1

@@ -1,0 +1,17 @@
+ply
+format ascii 1.0
+comment Small Triangle shifted further downwards
+element vertex 3
+property float x
+property float y
+property float z
+property float nx
+property float ny
+property float nz
+element face 1
+property list uchar int vertex_indices
+end_header
+-5.7762e-04 -2.9079e-04 1.3139e-01 0.2871647 0.42727871 1.31792246
+-8.0161e-04 3.7071e-04 1.5139e-01 -0.73134422  0.39691713  1.14435131
+-6.2709e-05 8.5896e-04 1.2143e-01 -0.47076329  0.17157627  1.32321243
+3 0 1 2

@@ -128,8 +128,8 @@ for i in range(Global_faces.shape[0]):
         interp = RegularGridInterpolator(
             (v_hat_pad, u_hat_pad),
             F,
-            method='linear',
-            # method='cubic',
+            # method='linear',
+            method='cubic',
             bounds_error=False,
             fill_value=0
         )

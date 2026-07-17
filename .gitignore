@@ -1,1 +1,5 @@
 .venv
+debug_bmp
+debug_npy
+debug_experiment
+debug_code/__pycache__

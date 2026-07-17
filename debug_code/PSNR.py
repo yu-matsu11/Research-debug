@@ -28,7 +28,7 @@ def calculate_ssim(ref_img, test_img):
 # --- メイン処理 ---
 
 # フォルダパスの設定
-base_dir = Path(r"C:\Users\YutoMatsuo\Desktop\Research\debug\debug_rotation")
+base_dir = Path(r"C:\Users\YutoMatsuo\Desktop\Research-debug\debug_rotation")   #C:\Users\YutoMatsuo\Desktop\Research-debug\debug_rotation\psnr_ssim_results.csv
 ref_dir = base_dir / "hologram_rotation_npy"  # 所望のデータ（基準）
 test_dir = base_dir / "interp_rotation_npy"  # 補間データ（比較対象）
 
@@ -66,14 +66,22 @@ with open(csv_save_path, mode='w', newline='', encoding='utf-8') as f:
         else:
             deg = "Unknown"  # 万が一解析できなかった場合のフォールバック
             
-        # データの読み込み
+        # データの読み込み  
         ref_data = np.load(ref_path)
         test_data = np.load(test_path)
         
         # 💡 自作の関数を使って 0~1 (float64) に正規化
         # ホログラムの振幅強度を比較するため、ここでは "abs" モードに指定しています
-        ref_norm = h.normalize_zero_to_one("abs", ref_data)
-        test_norm = h.normalize_zero_to_one("abs", test_data)
+        ref_abs = np.abs(ref_data).astype(np.float64)
+        test_abs = np.abs(test_data).astype(np.float64)
+
+        ref_min = np.min(ref_abs)
+        ref_range = np.max(ref_abs) - ref_min
+        if ref_range == 0:
+            raise ValueError(f"Reference data has no dynamic range: {file_name}")
+
+        ref_norm = (ref_abs - ref_min) / ref_range
+        test_norm = (test_abs - ref_min) / ref_range
         
         # PSNR と SSIM の計算
         psnr_score = calculate_psnr(ref_norm, test_norm)

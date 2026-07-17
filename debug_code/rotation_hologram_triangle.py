@@ -6,12 +6,16 @@ from scipy.interpolate import RegularGridInterpolator, RectBivariateSpline
 from pathlib import Path
 import hologram_utility as h
 
-script_dir = Path(__file__).resolve().parent.parent     #C:\Users\YutoMatsuo\Desktop\Research\debug
-model_name = "single_triangle7"
-rotation_dir = script_dir/"debug_rotation"
-dir_path = script_dir/"debug_npy"/f"{model_name}.npy"
+method_name = ["linear", "cubic"]
 
-script_path = os.path.abspath(__file__)
+script_dir = os.path.abspath(__file__)
+research_dir = os.path.dirname(script_dir)
+research_path = os.path.dirname(research_dir)
+
+model_name = "single_triangle7"
+model_path = os.path.join(research_path, "debug_ply", f"{model_name}.ply")
+model_npy = os.path.join(research_path, "debug_experiment", "linear", "single_triangle", "original", "npy")   
+model_bmp = os.path.join(research_path, "debug_experiment", "linear", "single_triangle", "original", "bmp")
 
 #パラメータ
 pitch = 4.5e-3
@@ -27,58 +31,11 @@ U, V = np.meshgrid(u, v)
 pre = U**2 + V**2
 W = np.sqrt(1/WAVELENGTH**2 - pre)
 
-def Rotation_matrix(theta):
-    R = np.array([[np.cos(theta), 0, np.sin(theta)],
-              [0, 1, 0],
-              [-np.sin(theta), 0, np.cos(theta)]])
-    return R
-
-def Rotation_matrix_Rodrigues(n):
-    # 1. 入力ベクトルの正規化
-    norm_n = np.linalg.norm(n)
-    if norm_n == 0:
-        return np.eye(3) # ゼロベクトルの場合は回転なし（単位行列）
-    n = n / norm_n
-    
-    ez = np.array([0, 0, 1])
-    
-    # 2. 特異点（n が真上 [0,0,1] または 真下 [0,0,-1] を向いている場合）の処理
-    # 外積 k のノルムが 0 になるため、個別に対処が必要
-    if np.allclose(n, ez):
-        return np.eye(3)  # すでに同じ向きなので回転なし
-    if np.allclose(n, -ez):
-        # 真下を向いている場合は、x軸（またはy軸）周りに180度回転させる
-        return np.array([[1, 0, 0],
-                         [0, -1, 0],
-                         [0, 0, -1]])
-    
-    # 3. 回転軸 k の算出と正規化
-    k = np.cross(ez, n)
-    k = k / np.linalg.norm(k)
-    
-    # 4. 回転角 theta の算出（計算誤差対策の clip を追加）
-    theta = np.arccos(np.clip(np.dot(ez, n), -1.0, 1.0))
-    
-    # 5. 歪対称行列（k_mat）の定義（カンマの追加と np.array 化）
-    k_mat = np.array([[0, -k[2], k[1]],
-                      [k[2], 0, -k[0]],
-                      [-k[1], k[0], 0]])
-    
-    # 6. ロドリゲスの公式による回転行列の計算（行列積 @ を使用）
-    R = np.eye(3) + k_mat * np.sin(theta) + (k_mat @ k_mat) * (1 - np.cos(theta))
-    
-    return R
-
 def Hz(z):
     term = 1/WAVELENGTH**2 - U**2 - V**2
     Hz = np.exp(1j * 2* np.pi * z * np.sqrt(term))
 
     return Hz
-
-
-g = np.load(dir_path)
-plt.figure(1)
-plt.imshow(h.normalize("log", g), 'gray')
 
 g_pad = h.padding(g, Ny, Nx)
 G = h.FFT(g_pad)
@@ -94,9 +51,9 @@ plt.imshow(g_view, 'gray')
 plt.show()
 
 """ホログラム回転運動補償計算"""
-for i, deg in enumerate(range(-45, 46)):
+for n, deg in enumerate(range(-45, 46)):
     theta = np.radians(deg)
-    R_plus = Rotation_matrix(theta) # 回転行列
+    R_plus = h.Rotation_matrix(theta) # 回転行列
     U_p, V_p, W_p = U, V, W
     alpha = U_p*R_plus[0, 0] + V_p*R_plus[0, 1] + W_p*R_plus[0, 2] - R_plus[0, 2]/WAVELENGTH
     beta = U_p*R_plus[1, 0] + V_p*R_plus[1, 1] + W_p*R_plus[1, 2] - R_plus[1, 2]/WAVELENGTH
@@ -120,11 +77,11 @@ for i, deg in enumerate(range(-45, 46)):
     g_recon_rotate_pad = h.IFFT(G_recon_rotate)
     g_recon_rotate = h.cutting(g_recon_rotate_pad, Ny, Nx)
 
-    model_save_npy = rotation_dir/"interp_rotation_npy"/f"{i:02d}_{model_name}_{deg:+}.npy"
-    model_save_bmp = rotation_dir/"interp_rotation_bmp"/f"{i:02d}_{model_name}_{deg:+}.bmp"
+    holo_save_npy = os.path.join(model_npy, f"{n:03d}_{deg:+03d}.npy")
+    holo_save_bmp = os.path.join(model_bmp, f"{n:03d}_{deg:+03d}.bmp")
 
-    np.save(model_save_npy, g_recon_rotate)
-    Image.fromarray(h.normalize("log", g_recon_rotate), mode="L").save(model_save_bmp, format="BMP")
+    np.save(holo_save_npy, g_recon_rotate)
+    Image.fromarray(h.normalize("log", g_recon_rotate), mode="L").save(holo_save_bmp, format="BMP")
 
     # plt.figure(3)
     # plt.imshow(h.normalize("log", g_recon_rotate), 'gray')

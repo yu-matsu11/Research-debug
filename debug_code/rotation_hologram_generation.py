@@ -29,16 +29,11 @@ def RotMatrix(n):
         R = np.eye(3)
     return R
 
-def Rotation_matrix(theta):
-    R = np.array([[np.cos(theta), 0, np.sin(theta)],
-              [0, 1, 0],
-              [-np.sin(theta), 0, np.cos(theta)]])
-    return R
 
 #パラメータ
 pitch = 4.5e-3
 WAVELENGTH = 530e-6
-Nx, Ny = 512, 512
+Nx, Ny = 1024, 1024
 
 # グローバル座標系の周波数座標系
 u = np.fft.fftshift(np.fft.fftfreq(Nx*2, d=pitch))
@@ -47,35 +42,45 @@ U, V = np.meshgrid(u, v)
 pre = U**2 + V**2
 G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
 
-script_dir = Path(__file__).resolve().parent.parent     #C:\Users\YutoMatsuo\Desktop\Research\debug
-model_name = "single_triangle7"
-rotation_dir = script_dir/"debug_rotation"
-model = script_dir/"debug_ply"/f"{model_name}.ply"
+# method_name = ["linear", "cubic"]
+method_name = ["cubic"]
 
-data = trimesh.load(model)
+script_dir = os.path.abspath(__file__)
+research_dir = os.path.dirname(script_dir)
+research_path = os.path.dirname(research_dir)
+
+model_name = "single_triangle7"
+model_path = os.path.join(research_path, "debug_ply", f"{model_name}.ply")
+
+
+data = trimesh.load(model_path)
 
 Global_vertices = data.vertices                                         #三角形の各頂点
 Global_faces = data.faces                                               #どの頂点を結ぶかの情報
 Global_vertex_normals = data.vertex_normals                             #各頂点の方向を表す
 Global_face_normals = data.face_normals                                 #三つの頂点を結んだときにできる三角形の面の方向を表す
 
-for n, deg in enumerate(range(-45, 46)):
-    theta = np.radians(deg)
-    R_p = Rotation_matrix(theta) # 回転行列
-    G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
+for method in method_name:
 
-    for i in range(Global_faces.shape[0]):
-    # for i in range(1):
-    # i=0
-        face_indices = Global_faces[i]
-        current_face_vertices = Global_vertices[face_indices] @ R_p.T
+    model_npy = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "npy")   
+    model_bmp = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "bmp")
 
-        n_vector =Global_face_normals[i] @ R_p.T                                       #三角形の法線ベクトル計算
-        
-        if np.dot(n_vector, np.array([0, 0, 1])) < 0:
-            n_vector = -n_vector
-        
-        if (n_vector != 0).any():
+    for n, deg in enumerate(range(-45, 46)):
+        theta = np.radians(deg)
+        R_p = h.Rotation_matrix(theta) # 回転行列
+        G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
+        face_indices = Global_faces
+        rotated_vertices = Global_vertices @ R_p.T
+
+        current_face_normals = Global_face_normals @ R_p.T                                       #三角形の法線ベクトル計算
+
+        for i in range(Global_faces.shape[0]):
+        # for i in range(1):
+        # i=0
+            n_vector = current_face_normals[i]
+            current_face_indices = face_indices[i]
+            current_face_vertices = rotated_vertices[current_face_indices]
+
             R = RotMatrix(n_vector)                                                 #回転行列計算
             Global_gravitypoints = np.mean(current_face_vertices, axis=0)           #グローバル座標系での三角形の重心計算
             local_vertices = (R @ (current_face_vertices - Global_gravitypoints).T).T     #ローカル座標系での三角形の頂点(z座標は0)
@@ -138,8 +143,7 @@ for n, deg in enumerate(range(-45, 46)):
             interp = RegularGridInterpolator(
                 (v_hat_pad, u_hat_pad),
                 F,
-                method='linear',
-                # method='cubic',
+                method=method,
                 bounds_error=False,
                 fill_value=0
             )
@@ -183,15 +187,15 @@ for n, deg in enumerate(range(-45, 46)):
 
             G_total += G
 
-    g_pad = h.IFFT(G_total)
+        g_pad = h.IFFT(G_total)
 
-    # 2048×2048を1024×1024に切り出し
-    g = h.cutting(g_pad, Ny, Nx)
+        # 2048×2048を1024×1024に切り出し
+        g = h.cutting(g_pad, Ny, Nx)
 
-    g_view = h.normalize("log", g)
+        g_view = h.normalize_255("log", g)
 
-    model_save_npy = rotation_dir/"hologram_rotation_npy"/f"{n:02d}_{model_name}_{deg:+}.npy"
-    model_save_bmp = rotation_dir/"hologram_rotation_bmp"/f"{n:02d}_{model_name}_{deg:+}.bmp"
+        holo_save_npy = os.path.join(model_npy, f"{n:03d}_{deg:+03d}.npy")
+        holo_save_bmp = os.path.join(model_bmp, f"{n:03d}_{deg:+03d}.bmp")
 
-    np.save(model_save_npy, g)
-    Image.fromarray(g_view, mode="L").save(model_save_bmp, format="BMP")
+        np.save(holo_save_npy, g)
+        Image.fromarray(g_view, mode="L").save(holo_save_bmp, format="BMP")

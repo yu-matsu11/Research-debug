@@ -18,7 +18,7 @@ pitch = 4.5e-3
 WAVELENGTH = 530e-6
 Nx, Ny = 512, 512
 X_start, Y_start = Nx // 2, Ny // 2
-z = 0
+z = 2
 
 # グローバル座標系の周波数座標系
 u = np.fft.fftshift(np.fft.fftfreq(Nx*2, d=pitch))
@@ -31,42 +31,6 @@ def Rotation_matrix(theta):
     R = np.array([[np.cos(theta), 0, np.sin(theta)],
               [0, 1, 0],
               [-np.sin(theta), 0, np.cos(theta)]])
-    return R
-
-def Rotation_matrix_Rodrigues(n):
-    # 1. 入力ベクトルの正規化
-    norm_n = np.linalg.norm(n)
-    if norm_n == 0:
-        return np.eye(3) # ゼロベクトルの場合は回転なし（単位行列）
-    n = n / norm_n
-    
-    ez = np.array([0, 0, 1])
-    
-    # 2. 特異点（n が真上 [0,0,1] または 真下 [0,0,-1] を向いている場合）の処理
-    # 外積 k のノルムが 0 になるため、個別に対処が必要
-    if np.allclose(n, ez):
-        return np.eye(3)  # すでに同じ向きなので回転なし
-    if np.allclose(n, -ez):
-        # 真下を向いている場合は、x軸（またはy軸）周りに180度回転させる
-        return np.array([[1, 0, 0],
-                         [0, -1, 0],
-                         [0, 0, -1]])
-    
-    # 3. 回転軸 k の算出と正規化
-    k = np.cross(ez, n)
-    k = k / np.linalg.norm(k)
-    
-    # 4. 回転角 theta の算出（計算誤差対策の clip を追加）
-    theta = np.arccos(np.clip(np.dot(ez, n), -1.0, 1.0))
-    
-    # 5. 歪対称行列（k_mat）の定義（カンマの追加と np.array 化）
-    k_mat = np.array([[0, -k[2], k[1]],
-                      [k[2], 0, -k[0]],
-                      [-k[1], k[0], 0]])
-    
-    # 6. ロドリゲスの公式による回転行列の計算（行列積 @ を使用）
-    R = np.eye(3) + k_mat * np.sin(theta) + (k_mat @ k_mat) * (1 - np.cos(theta))
-    
     return R
 
 def Hz(z):
@@ -86,6 +50,8 @@ g_recon_pad = h.IFFT(G_recon)
 g_recon = h.cutting(g_recon_pad, Ny, Nx)
 
 g_view = h.normalize_255("log", g_recon)
+plt.figure(1)
+plt.imshow(g_view, 'gray')
 
 """ホログラム回転運動補償計算"""
 theta = np.radians(60)
@@ -107,13 +73,13 @@ interp = RegularGridInterpolator(
 )
 
 query_points = np.stack([beta_p, alpha_p], axis=-1)
-G_transfer_rotate = interp(query_points)
-G_recon_rotate = G_transfer_rotate * Hz(-z)
+G_transfer_rotate = jacobian_plus * interp(query_points)
+G_recon_rotate = G_transfer_rotate
 
 g_recon_rotate_pad = h.IFFT(G_recon_rotate)
 g_recon_rotate = h.cutting(g_recon_rotate_pad, Ny, Nx)
 
-plt.figure(1)
+plt.figure(2)
 plt.imshow(h.normalize_255("log", g_recon_rotate), 'gray')
 
 
@@ -136,12 +102,12 @@ interp = RegularGridInterpolator(
 )
 
 query_points = np.stack([beta_m, alpha_m], axis=-1)
-G_transfer_rotate_m = interp(query_points)
+G_transfer_rotate_m = jacobian_minus * interp(query_points)
 G_recon_rotate_m = G_transfer_rotate_m * Hz(-z)
 
 g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m)
 g_recon_rotate_m = h.cutting(g_recon_rotate_m_pad, Ny, Nx)
 
-plt.figure(2)
+plt.figure(3)
 plt.imshow(h.normalize_255("log", g_recon_rotate_m), 'gray')
 plt.show()

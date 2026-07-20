@@ -33,7 +33,7 @@ def RotMatrix(n):
 #パラメータ
 pitch = 4.5e-3
 WAVELENGTH = 530e-6
-Nx, Ny = 1024, 1024
+Nx, Ny = 512, 512
 
 # グローバル座標系の周波数座標系
 u = np.fft.fftshift(np.fft.fftfreq(Nx*2, d=pitch))
@@ -65,7 +65,7 @@ for method in method_name:
     model_npy = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "npy")   
     model_bmp = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "bmp")
 
-    for n, deg in enumerate(range(-45, 46)):
+    for n, deg in enumerate(range(45, 46)):
         theta = np.radians(deg)
         R_p = h.Rotation_matrix(theta) # 回転行列
         G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
@@ -197,5 +197,5 @@ for method in method_name:
         holo_save_npy = os.path.join(model_npy, f"{n:03d}_{deg:+03d}.npy")
         holo_save_bmp = os.path.join(model_bmp, f"{n:03d}_{deg:+03d}.bmp")
 
-        np.save(holo_save_npy, g)
+        # np.save(holo_save_npy, g)
         Image.fromarray(g_view, mode="L").save(holo_save_bmp, format="BMP")

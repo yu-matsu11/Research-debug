@@ -7,28 +7,11 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import hologram_utility as h
 
-def RotMatrix(n):
-    n = n / np.linalg.norm(n)
+def Hz(z):
+    term = 1/WAVELENGTH**2 - U**2 - V**2
+    Hz = np.exp(1j * 2* np.pi * z * np.sqrt(term))
 
-    if abs(n[2] - 1.0) < 1e-9:
-        return np.eye(3)
-
-    ex, ez = [1, 0, 0], [0, 0, 1]
-    cos_theta = ez @ n
-    sin_theta = np.linalg.norm(np.cross(ez, n))
-    nn = np.array([n[0], n[1], 0.0])
-    nn = nn / np.linalg.norm(nn)
-    cos_phi = ex @ nn
-    sin_phi = np.linalg.norm(np.cross(ex, nn))
-    if n[1]<0:
-        sin_phi = -sin_phi
-    R = np.array([[cos_phi*cos_theta, cos_theta*sin_phi, -sin_theta],
-                 [-sin_phi, cos_phi, 0],
-                 [cos_phi*sin_theta, sin_phi*sin_theta, cos_theta]])
-    if abs(n[2] - 1) < 1e-6:
-        R = np.eye(3)
-    return R
-
+    return Hz
 
 #パラメータ
 pitch = 4.5e-3
@@ -42,8 +25,8 @@ U, V = np.meshgrid(u, v)
 pre = U**2 + V**2
 G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
 
-# method_name = ["linear", "cubic"]
-method_name = ["cubic"]
+method_name = ["linear", "cubic"]
+# method_name = ["cubic"]
 
 script_dir = os.path.abspath(__file__)
 research_dir = os.path.dirname(script_dir)
@@ -65,7 +48,7 @@ for method in method_name:
     model_npy = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "npy")   
     model_bmp = os.path.join(research_path, "debug_experiment", method, "single_triangle", "original", "bmp")
 
-    for n, deg in enumerate(range(45, 46)):
+    for n, deg in enumerate(range(-45, 46)):
         theta = np.radians(deg)
         R_p = h.Rotation_matrix(theta) # 回転行列
         G_total = np.zeros((Ny*2, Nx*2), dtype=np.complex128)
@@ -81,7 +64,7 @@ for method in method_name:
             current_face_indices = face_indices[i]
             current_face_vertices = rotated_vertices[current_face_indices]
 
-            R = RotMatrix(n_vector)                                                 #回転行列計算
+            R = h.RotMatrix(n_vector)                                                 #回転行列計算
             Global_gravitypoints = np.mean(current_face_vertices, axis=0)           #グローバル座標系での三角形の重心計算
             local_vertices = (R @ (current_face_vertices - Global_gravitypoints).T).T     #ローカル座標系での三角形の頂点(z座標は0)
             
@@ -187,7 +170,7 @@ for method in method_name:
 
             G_total += G
 
-        g_pad = h.IFFT(G_total)
+        g_pad = h.IFFT(G_total * Hz(-2))
 
         # 2048×2048を1024×1024に切り出し
         g = h.cutting(g_pad, Ny, Nx)
@@ -197,5 +180,5 @@ for method in method_name:
         holo_save_npy = os.path.join(model_npy, f"{n:03d}_{deg:+03d}.npy")
         holo_save_bmp = os.path.join(model_bmp, f"{n:03d}_{deg:+03d}.bmp")
 
-        # np.save(holo_save_npy, g)
+        np.save(holo_save_npy, g)
         Image.fromarray(g_view, mode="L").save(holo_save_bmp, format="BMP")

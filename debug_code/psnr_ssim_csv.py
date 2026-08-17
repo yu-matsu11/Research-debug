@@ -27,9 +27,8 @@ def main():
     }
     colors = {"Linear": "tab:blue", "Cubic": "tab:orange"}
 
-    fig, (psnr_ax, ssim_ax) = plt.subplots(
-        2, 1, figsize=(10, 8), sharex=True, constrained_layout=True
-    )
+    psnr_fig, psnr_ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
+    ssim_fig, ssim_ax = plt.subplots(figsize=(10, 5), constrained_layout=True)
 
     for method, csv_path in methods.items():
         if not csv_path.exists():
@@ -43,20 +42,24 @@ def main():
             angles, ssim_values, s=24, alpha=0.8, color=colors[method], label=method
         )
 
-    psnr_ax.set_title("PSNR: Original vs. Interpolation")
+    psnr_ax.set_title("PSNR")
+    psnr_ax.set_xlabel("Angle (degrees)")
     psnr_ax.set_ylabel("PSNR (dB)")
     psnr_ax.grid(True, alpha=0.3)
     psnr_ax.legend()
 
-    ssim_ax.set_title("SSIM: Original vs. Interpolation")
+    ssim_ax.set_title("SSIM")
     ssim_ax.set_xlabel("Angle (degrees)")
     ssim_ax.set_ylabel("SSIM")
     ssim_ax.grid(True, alpha=0.3)
     ssim_ax.legend()
 
-    output_path = experiment_dir / "psnr_ssim_scatter.png"
-    fig.savefig(output_path, dpi=300)
-    print(f"Graph saved: {output_path}")
+    psnr_output_path = experiment_dir / "psnr_scatter.png"
+    ssim_output_path = experiment_dir / "ssim_scatter.png"
+    psnr_fig.savefig(psnr_output_path, dpi=300)
+    ssim_fig.savefig(ssim_output_path, dpi=300)
+    print(f"PSNR graph saved: {psnr_output_path}")
+    print(f"SSIM graph saved: {ssim_output_path}")
     plt.show()
 
 

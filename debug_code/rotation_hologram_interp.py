@@ -49,7 +49,7 @@ g_recon_pad = h.IFFT(G_recon)
 
 g_recon = h.cutting(g_recon_pad, Ny, Nx)
 
-g_view = h.normalize_255("log", g_recon)
+g_view = h.normalize_255("log", g)
 plt.figure(1)
 plt.imshow(g_view, 'gray')
 
@@ -65,7 +65,8 @@ jacobian_plus = np.abs(R_plus[0, 0]*R_plus[1, 1] - R_plus[0, 1]*R_plus[1, 0])
 
 interp = RegularGridInterpolator(
     (v, u),
-    G_recon*np.exp(-1j*2*np.pi*z*gamma_p),
+    # G_recon*np.exp(-1j*2*np.pi*z*gamma_p),
+    G_recon,
     # method='linear',
     method='cubic',
     bounds_error=False,
@@ -76,11 +77,12 @@ query_points = np.stack([beta_p, alpha_p], axis=-1)
 G_transfer_rotate = jacobian_plus * interp(query_points)
 G_recon_rotate = G_transfer_rotate
 
-g_recon_rotate_pad = h.IFFT(G_recon_rotate)
+g_recon_rotate_pad = h.IFFT(G_recon_rotate * Hz(-z))
 g_recon_rotate = h.cutting(g_recon_rotate_pad, Ny, Nx)
 
 plt.figure(2)
-plt.imshow(h.normalize_255("log", g_recon_rotate), 'gray')
+g_recon_rotate_view = h.normalize_255("log", g_recon_rotate)
+plt.imshow(g_recon_rotate_view, 'gray')
 
 
 theta_m = np.radians(-60)
@@ -94,7 +96,7 @@ jacobian_minus = np.abs(R_minus[0, 0]*R_minus[1, 1] - R_minus[0, 1]*R_minus[1, 0
 
 interp = RegularGridInterpolator(
     (v, u),
-    G_recon_rotate*np.exp(-1j*2*np.pi*z*gamma_m),
+    G_recon_rotate,
     # method='linear',
     method='cubic',
     bounds_error=False,
@@ -103,11 +105,29 @@ interp = RegularGridInterpolator(
 
 query_points = np.stack([beta_m, alpha_m], axis=-1)
 G_transfer_rotate_m = jacobian_minus * interp(query_points)
-G_recon_rotate_m = G_transfer_rotate_m * Hz(-z)
+G_recon_rotate_m = G_transfer_rotate_m
 
-g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m)
+g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m * Hz(-z))
+# g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m*Hz(-np.sqrt(3)/4))
 g_recon_rotate_m = h.cutting(g_recon_rotate_m_pad, Ny, Nx)
 
 plt.figure(3)
-plt.imshow(h.normalize_255("log", g_recon_rotate_m), 'gray')
+g_recon_rotate_m_view = h.normalize_255("log", g_recon_rotate_m)
+plt.imshow(g_recon_rotate_m_view, 'gray')
 plt.show()
+
+# 3枚の画像をBMP形式で保存
+# save_dir = Path("C:/Users/YutoMatsuo/Desktop/\u30bc\u30df\u30b9\u30e9\u30a4\u30c9/2026_07_21\u30bc\u30df\u8cc7\u6599")
+# print(save_dir)
+# save_dir.mkdir(parents=True, exist_ok=True)
+
+# Image.fromarray(np.asarray(g_view, dtype=np.uint8)).save(
+#     save_dir / "rotation_original.bmp"
+# )
+# Image.fromarray(np.asarray(g_recon_rotate_view, dtype=np.uint8)).save(
+#     save_dir / "rotation_plus_60deg.bmp"
+# )
+# Image.fromarray(np.asarray(g_recon_rotate_m_view, dtype=np.uint8)).save(
+#     save_dir / "rotation_minus_60deg.bmp"
+# )
+

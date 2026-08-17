@@ -7,6 +7,8 @@ from pathlib import Path
 import hologram_utility as h
 
 method_name = ["linear", "cubic"]
+# method_name = ["linear"]
+# method_name = ["cubic"]
 
 script_dir = os.path.abspath(__file__)
 research_dir = os.path.dirname(script_dir)
@@ -15,9 +17,9 @@ research_path = os.path.dirname(research_dir)
 #パラメータ
 pitch = 4.5e-3
 WAVELENGTH = 530e-6
-Nx, Ny = 1024, 1024
+Nx, Ny = 512, 512
 X_start, Y_start = Nx // 2, Ny // 2
-z = 0
+z = 2
 
 # グローバル座標系の周波数座標系
 u = np.fft.fftshift(np.fft.fftfreq(Nx*2, d=pitch))
@@ -66,7 +68,8 @@ for method in method_name:
 
         interp = RegularGridInterpolator(
             (v, u),
-            G_recon*np.exp(-1j*2*np.pi*z*gamma),
+            # G_recon*np.exp(-1j*2*np.pi*z*gamma),
+            G_recon,
             # method='linear',
             method='cubic',
             bounds_error=False,

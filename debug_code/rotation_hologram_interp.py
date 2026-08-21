@@ -57,10 +57,10 @@ plt.imshow(g_view, 'gray')
 theta = np.radians(60)
 R_plus = Rotation_matrix(theta) # 回転行列
 U_p, V_p, W_p = U, V, W
-alpha_p = U_p*R_plus[0, 0] + V_p*R_plus[0, 1] + W_p*R_plus[0, 2] - R_plus[0, 2]/WAVELENGTH
-beta_p = U_p*R_plus[1, 0] + V_p*R_plus[1, 1] + W_p*R_plus[1, 2] - R_plus[1, 2]/WAVELENGTH
-gamma_p = U_p*R_plus[2, 0] + V_p*R_plus[2, 1] + W_p*R_plus[2, 2] - R_plus[2, 2]/WAVELENGTH
 jacobian_plus = np.abs(R_plus[0, 0]*R_plus[1, 1] - R_plus[0, 1]*R_plus[1, 0])
+alpha_p = R_plus[0, 0]*(U_p-R_plus[0, 2]/WAVELENGTH) + R_plus[0, 1]*(V_p-R_plus[1, 2]/WAVELENGTH) + R_plus[0, 2]*(W_p-R_plus[2, 2]/WAVELENGTH)
+beta_p = R_plus[1, 0]*(U_p-R_plus[0, 2]/WAVELENGTH) + R_plus[1, 1]*(V_p-R_plus[1, 2]/WAVELENGTH) + R_plus[1, 2]*(W_p-R_plus[2, 2]/WAVELENGTH)
+gamma_p = np.sqrt(1/WAVELENGTH**2 - alpha_p**2 - beta_p**2)
 
 
 interp = RegularGridInterpolator(
@@ -84,50 +84,30 @@ plt.figure(2)
 g_recon_rotate_view = h.normalize_255("log", g_recon_rotate)
 plt.imshow(g_recon_rotate_view, 'gray')
 
+plt.show()
 
-theta_m = np.radians(-60)
+theta_m = np.radians(60)
 R_minus = Rotation_matrix(theta_m) # 回転行列
-U_p, V_p, W_p = U, V, W
-alpha_m = U_p*R_minus[0, 0] + V_p*R_minus[0, 1] + W_p*R_minus[0, 2] - R_minus[0, 2]/WAVELENGTH
-beta_m = U_p*R_minus[1, 0] + V_p*R_minus[1, 1] + W_p*R_minus[1, 2] - R_minus[1, 2]/WAVELENGTH
-gamma_m = U_p*R_minus[2, 0] + V_p*R_minus[2, 1] + W_p*R_minus[2, 2] - R_minus[2, 2]/WAVELENGTH
-jacobian_minus = np.abs(R_minus[0, 0]*R_minus[1, 1] - R_minus[0, 1]*R_minus[1, 0])
-
+alpha_m = R_minus[0, 0]*alpha_p + R_minus[0, 1]*beta_p + R_minus[0, 2]*gamma_p - R_minus[0, 2]/WAVELENGTH
+beta_m = R_minus[1, 0]*alpha_p + R_minus[1, 1]*beta_p + R_minus[1, 2]*gamma_p - R_minus[1, 2]/WAVELENGTH
+gamma_m = np.sqrt(1/WAVELENGTH**2 - alpha_m**2 - beta_m**2)
 
 interp = RegularGridInterpolator(
     (v, u),
     G_recon_rotate,
-    # method='linear',
     method='cubic',
     bounds_error=False,
     fill_value=0
 )
 
 query_points = np.stack([beta_m, alpha_m], axis=-1)
-G_transfer_rotate_m = jacobian_minus * interp(query_points)
-G_recon_rotate_m = G_transfer_rotate_m
+G_transfer_rotate_back = interp(query_points)
 
-g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m * Hz(-z))
-# g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m*Hz(-np.sqrt(3)/4))
-g_recon_rotate_m = h.cutting(g_recon_rotate_m_pad, Ny, Nx)
+g_recon_rotate_back_pad = h.IFFT(G_transfer_rotate_back * Hz(-z))
+g_recon_rotate_back = h.cutting(g_recon_rotate_back_pad, Ny, Nx)
 
 plt.figure(3)
-g_recon_rotate_m_view = h.normalize_255("log", g_recon_rotate_m)
-plt.imshow(g_recon_rotate_m_view, 'gray')
+g_recon_rotate_back_view = h.normalize_255("log", g_recon_rotate_back)
+plt.imshow(g_recon_rotate_back_view, 'gray')
+
 plt.show()
-
-# 3枚の画像をBMP形式で保存
-# save_dir = Path("C:/Users/YutoMatsuo/Desktop/\u30bc\u30df\u30b9\u30e9\u30a4\u30c9/2026_07_21\u30bc\u30df\u8cc7\u6599")
-# print(save_dir)
-# save_dir.mkdir(parents=True, exist_ok=True)
-
-# Image.fromarray(np.asarray(g_view, dtype=np.uint8)).save(
-#     save_dir / "rotation_original.bmp"
-# )
-# Image.fromarray(np.asarray(g_recon_rotate_view, dtype=np.uint8)).save(
-#     save_dir / "rotation_plus_60deg.bmp"
-# )
-# Image.fromarray(np.asarray(g_recon_rotate_m_view, dtype=np.uint8)).save(
-#     save_dir / "rotation_minus_60deg.bmp"
-# )
-

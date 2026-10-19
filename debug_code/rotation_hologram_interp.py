@@ -50,6 +50,7 @@ g_recon_pad = h.IFFT(G_recon)
 g_recon = h.cutting(g_recon_pad, Ny, Nx)
 
 g_view = h.normalize_255("log", g)
+G_recon_view = h.normalize_255("log", G_recon)
 plt.figure(1)
 plt.imshow(g_view, 'gray')
 
@@ -81,32 +82,158 @@ g_recon_rotate = h.cutting(g_recon_rotate_pad, Ny, Nx)
 
 plt.figure(2)
 g_recon_rotate_view = h.normalize_255("log", g_recon_rotate)
+G_recon_rotate_view = h.normalize_255("log", G_recon_rotate)
 plt.imshow(g_recon_rotate_view, 'gray')
 
-plt.show()
+theta_m = np.radians(-60)
+R_minus = Rotation_matrix(theta_m)
 
-# theta_m = np.radians(60)
+# ==========================================
+# VOT : pre-transform carrier compensation
+# global / parallel -> local / tilted
+# ==========================================
+
+# carrier shift
+D_u = R_minus[2, 0] / WAVELENGTH
+D_v = R_minus[2, 1] / WAVELENGTH
+
+# 先にcarrierを周波数座標へ加える
+U_phys = U + D_u
+V_phys = V + D_v
+
+# w_t'
+term_m = 1 / WAVELENGTH**2 - U_phys**2 - V_phys**2
+
+valid_m = term_m >= 0
+W_m = np.zeros_like(term_m)
+W_m[valid_m] = np.sqrt(term_m[valid_m])
+
+# VOT-pre の周波数座標変換
+# u_s = a1*u_t' + a4*v_t' + a7*w_t'
+# v_s = a2*u_t' + a5*v_t' + a8*w_t'
+alpha_m = (
+    R_minus[0, 0] * U_phys
+    + R_minus[0, 1] * V_phys
+    + R_minus[0, 2] * W_m
+)
+
+beta_m = (
+    R_minus[1, 0] * U_phys
+    + R_minus[1, 1] * V_phys
+    + R_minus[1, 2] * W_m
+)
+
+
+# ==========================================
+# Jacobian
+# ==========================================
+
+W_safe = np.where(
+    valid_m & (W_m != 0),
+    W_m,
+    np.inf
+)
+
+du_dU = (
+    R_minus[0, 0]
+    - R_minus[0, 2] * U_phys / W_safe
+)
+
+du_dV = (
+    R_minus[0, 1]
+    - R_minus[0, 2] * V_phys / W_safe
+)
+
+dv_dU = (
+    R_minus[1, 0]
+    - R_minus[1, 2] * U_phys / W_safe
+)
+
+dv_dV = (
+    R_minus[1, 1]
+    - R_minus[1, 2] * V_phys / W_safe
+)
+
+jacobian_minus = np.abs(
+    du_dU * dv_dV - du_dV * dv_dU
+)
+
+jacobian_minus[~valid_m] = 0
+jacobian_minus[~np.isfinite(jacobian_minus)] = 0
+
+
+# ==========================================
+# Interpolation
+# ==========================================
+
+sqrt_J = np.sqrt(jacobian_minus)
+
+interp = RegularGridInterpolator(
+    (v, u),
+    G_recon_rotate * sqrt_J,
+    method='cubic',
+    bounds_error=False,
+    fill_value=0
+)
+
+query_points = np.stack(
+    [beta_m, alpha_m],
+    axis=-1
+)
+
+G_transfer_rotate_m = (
+    sqrt_J * interp(query_points)
+)
+
+G_recon_rotate_m = G_transfer_rotate_m
+
+# theta_m = np.radians(-60)
 # R_minus = Rotation_matrix(theta_m) # 回転行列
-# alpha_m = R_minus[0, 0]*alpha_p + R_minus[0, 1]*beta_p + R_minus[0, 2]*gamma_p - R_minus[0, 2]/WAVELENGTH
-# beta_m = R_minus[1, 0]*alpha_p + R_minus[1, 1]*beta_p + R_minus[1, 2]*gamma_p - R_minus[1, 2]/WAVELENGTH
-# gamma_m = np.sqrt(1/WAVELENGTH**2 - alpha_m**2 - beta_m**2)
+# U_p, V_p, W_p = U, V, W
+# alpha_m = U_p*R_minus[0, 0] + V_p*R_minus[0, 1] + W_p*R_minus[0, 2] - R_minus[0, 2]/WAVELENGTH
+# beta_m = U_p*R_minus[1, 0] + V_p*R_minus[1, 1] + W_p*R_minus[1, 2] - R_minus[1, 2]/WAVELENGTH
+# gamma_m = U_p*R_minus[2, 0] + V_p*R_minus[2, 1] + W_p*R_minus[2, 2] - R_minus[2, 2]/WAVELENGTH
+# jacobian_minus = np.abs(R_minus[0, 0]*R_minus[1, 1] - R_minus[0, 1]*R_minus[1, 0])
+
 
 # interp = RegularGridInterpolator(
 #     (v, u),
 #     G_recon_rotate,
+#     # method='linear',
 #     method='cubic',
 #     bounds_error=False,
 #     fill_value=0
 # )
 
 # query_points = np.stack([beta_m, alpha_m], axis=-1)
-# G_transfer_rotate_back = interp(query_points)
+# G_transfer_rotate_m = jacobian_minus * interp(query_points)
+# G_recon_rotate_m = G_transfer_rotate_m
 
-# g_recon_rotate_back_pad = h.IFFT(G_transfer_rotate_back * Hz(-z))
-# g_recon_rotate_back = h.cutting(g_recon_rotate_back_pad, Ny, Nx)
+# g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m * Hz(-z))
+g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m)
+# g_recon_rotate_m_pad = h.IFFT(G_recon_rotate_m*Hz(-np.sqrt(3)/4))
+g_recon_rotate_m = h.cutting(g_recon_rotate_m_pad, Ny, Nx)
 
-# plt.figure(3)
-# g_recon_rotate_back_view = h.normalize_255("log", g_recon_rotate_back)
-# plt.imshow(g_recon_rotate_back_view, 'gray')
+plt.figure(3)
+g_recon_rotate_m_view = h.normalize_255("log", g_recon_rotate_m)
+plt.imshow(g_recon_rotate_m_view, 'gray')
 
-# plt.show()
+# # Save the initial and +60-degree hologram/spectrum images as 8-bit BMP files.
+# save_dir = rotation_dir / "rotation_60deg_bmp"
+# save_dir.mkdir(parents=True, exist_ok=True)
+
+# output_images = {
+#     "01_initial_hologram.bmp": g_view,
+#     "02_initial_spectrum.bmp": G_recon_view,
+#     "03_rotated_spectrum_+60deg.bmp": G_recon_rotate_view,
+#     "04_rotated_hologram_+60deg.bmp": g_recon_rotate_view,
+# }
+
+# for filename, image in output_images.items():
+#     Image.fromarray(np.asarray(image, dtype=np.uint8)).save(
+#         save_dir / filename,
+#         format="BMP",
+#     )
+
+# print(f"4 BMP images saved to: {save_dir}")
+plt.show()

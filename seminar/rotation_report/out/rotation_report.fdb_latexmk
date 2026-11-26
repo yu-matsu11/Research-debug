@@ -1,0 +1,22 @@
+# Fdb version 4
+["dvipdf"] 0 "out/rotation_report.dvi" "out/rotation_report.pdf" "out/rotation_report" 0 -1
+  "out/rotation_report.dvi" 0 -1 0 "latex"
+  (generated)
+  "out/rotation_report.pdf"
+  (rewritten before read)
+["latex"] 1795510009.30343 "c:/Users/YutoMatsuo/Desktop/Research-debug/seminar/rotation_report/rotation_report.tex" "out/rotation_report.dvi" "rotation_report" 1795510009.89502 2
+  "c:/Users/YutoMatsuo/Desktop/Research-debug/seminar/rotation_report/rotation_report.tex" 1795510005 12142 f94bd7a9eaec62a4b87dad702e3ec04f ""
+  "c:/texlive/2026/texmf-dist/tex/generic/infwarerr/infwarerr.sty" 1776494907 8356 7bbb2c2373aa810be568c29e333da8ed ""
+  "c:/texlive/2026/texmf-dist/tex/luatex/luatexja/ltjsarticle.cls" 1776495590 54429 3ced441fe642c2786693ac3721b8e3e8 ""
+  "c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja-core.sty" 1776495590 29886 63e89c93faeaadea0d8b3dd231e616da ""
+  "c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja.sty" 1776495590 1902 3d487d128b91b6d0ceac1ad14cb3ad5c ""
+  "c:/texlive/2026/texmf-dist/web2c/texmf.cnf" 1776491718 43630 e9fa012910491fe5ae08a72c3c2997a7 ""
+  "c:/texlive/2026/texmf-var/web2c/euptex/platex.fmt" 1776498955 3652294 f9c64be5b0b9fb4bde04397793eddaef ""
+  "c:/texlive/2026/texmf.cnf" 1776498814 713 e69b156964470283e0530f5060668171 ""
+  "out/rotation_report.aux" 1795510001 32 3985256e7290058c681f74d7a3565a19 "latex"
+  "rotation_report.tex" 1795510005 12142 f94bd7a9eaec62a4b87dad702e3ec04f ""
+  (generated)
+  "out/rotation_report.aux"
+  "out/rotation_report.dvi"
+  "out/rotation_report.log"
+  (rewritten before read)

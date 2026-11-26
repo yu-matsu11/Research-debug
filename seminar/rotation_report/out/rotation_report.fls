@@ -1,0 +1,14 @@
+PWD c:/Users/YutoMatsuo/Desktop/Research-debug/seminar/rotation_report
+INPUT c:/texlive/2026/texmf.cnf
+INPUT c:/texlive/2026/texmf-dist/web2c/texmf.cnf
+INPUT c:/texlive/2026/texmf-var/web2c/euptex/platex.fmt
+INPUT c:/Users/YutoMatsuo/Desktop/Research-debug/seminar/rotation_report/rotation_report.tex
+OUTPUT out/rotation_report.log
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/ltjsarticle.cls
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/ltjsarticle.cls
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja.sty
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja.sty
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja-core.sty
+INPUT c:/texlive/2026/texmf-dist/tex/luatex/luatexja/luatexja-core.sty
+INPUT c:/texlive/2026/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+INPUT c:/texlive/2026/texmf-dist/tex/generic/infwarerr/infwarerr.sty

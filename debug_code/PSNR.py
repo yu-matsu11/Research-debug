@@ -86,6 +86,7 @@ def process_method(method_dir):
 
 # --- メイン処理 ---
 
-base_dir = Path(__file__).resolve().parent.parent / "debug_experiment"
-for method in ("linear", "cubic"):
-    process_method(base_dir / method)
+if __name__ == "__main__":
+    base_dir = Path(__file__).resolve().parent.parent / "debug_experiment"
+    for method in ("linear", "cubic"):
+        process_method(base_dir / method)

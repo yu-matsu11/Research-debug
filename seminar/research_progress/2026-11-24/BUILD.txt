@@ -1,0 +1,5 @@
+研究進捗日: 2026-11-24
+このフォルダ内で次のコマンドを実行してください。
+lualatex -interaction=nonstopmode -halt-on-error rotation_report_20261124.tex
+lualatex -interaction=nonstopmode -halt-on-error rotation_report_20261124.tex
+図はfiguresフォルダに同梱しています。日付ごとの版を上書きせず保存します。

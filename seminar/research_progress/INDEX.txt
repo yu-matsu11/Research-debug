@@ -1,0 +1,19 @@
+研究進捗アーカイブ
+
+2026-11-19/rotation_report_20261119.tex・pdf
+  理論、R1=Iの等価性、45度Originalからの独立変換、振幅比較、PSNR・SSIM。
+  FFTスペクトル比較は含まない（5ページ）。
+
+2026-11-24/rotation_report_20261124.tex・pdf
+  11月19日版にOriginalと変換結果のFFT振幅スペクトル比較を追加（6ページ）。
+
+運用：
+  研究内容を追加した日付のフォルダを作り、その日のTeX・PDF・図を一緒に保存する。
+  過去の日付のフォルダは更新せず、新しい日付の版として保存する。
+  各フォルダのBUILD.txtにPDFの生成コマンドを記載。
+  TeXの参照画像は各フォルダのfigures内にあり、他の日付の版に依存しない。
+
+リポジトリ側の作成補助：
+  python debug_code/archive_rotation_progress.py --source <元TeXのパス> --date YYYY-MM-DD
+  このコマンドはTeX・参照画像・CSVを新規日付フォルダに複製する。
+  その後BUILD.txtのコマンドでその日付のPDFを生成する。

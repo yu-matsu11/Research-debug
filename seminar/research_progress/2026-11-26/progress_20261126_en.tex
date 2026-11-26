@@ -1,0 +1,44 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{amsmath,booktabs}
+\title{Research Progress: Initial Object Tilt and Projected Width}
+\author{}
+\date{November 26, 2026}
+\begin{document}
+\maketitle
+\section{Observations and hypothesis}
+The November 24 report (pp.\ 5--6) used the Original hologram of the object at $45^\circ$ as a fixed input. Each target angle was computed independently. The oblique feature of the FFT magnitude has a similar orientation to the Original at $44^\circ$ and a visibly different orientation at $30^\circ$. At $0^\circ$, the directions are closer, but some frequency components are weaker. PSNR and SSIM decrease at intermediate angles and recover near $0^\circ$.
+
+The hologram lies in the reference plane, which is consistent with setting $R_1=I$. The input field, however, was generated from an object tilted by $45^\circ$. A plane transformation parameterized by the relative angle alone may fail to reproduce the change in projected width that depends on the initial object angle.
+
+\section{Projected width and first-order approximation}
+Let $L_0$ be the frontal width, $\theta_0=45^\circ$ the initial object angle, and $\theta=\theta_0+\delta$ the target angle. The geometric projected width is $L_0\cos\theta$. The geometric magnification, the implemented frequency map, and its slope at the origin are
+
+\begin{align}
+M_{\rm geo} &= \frac{\cos(\theta_0+\delta)}{\cos\theta_0}
+             =\cos\delta-\tan\theta_0\sin\delta,\\
+U_p &= U-\lambda^{-1}\sin\delta,\quad
+W_p=\sqrt{\lambda^{-2}-U_p^2-V^2},\\
+\alpha &= U_p\cos\delta+W_p\sin\delta,\\
+\left.\frac{\partial\alpha}{\partial U}\right|_{(0,0)}
+ &=\left.\left(\cos\delta-\sin\delta\,\frac{U_p}{W_p}\right)\right|_{(0,0)}
+ =\frac{1}{\cos\delta}.
+\end{align}
+At the origin, $W_p=\cos\delta/\lambda$ and $\alpha=0$ over the tested range. Linearizing gives $\alpha\simeq U/\cos\delta$. The Fourier scaling theorem then gives $M_{\rm approx}\simeq1/\cos\delta$. For $45^\circ$ to $30^\circ$, geometric projection predicts a magnification of 1.2247, while the first-order approximation gives 1.0353.
+
+\begin{center}
+\begin{tabular}{rrrr}\toprule
+$\theta$ (deg) & $L_{\rm geo}/L_0$ & $L_{\rm approx}/L_0$ & $\Delta L/L_0$\\\midrule
+45 & 0.7071 & 0.7071 & 0.0000\\
+40 & 0.7660 & 0.7098 & 0.0562\\
+30 & 0.8660 & 0.7321 & 0.1340\\
+20 & 0.9397 & 0.7802 & 0.1595\\
+10 & 0.9848 & 0.8632 & 0.1216\\
+0  & 1.0000 & 1.0000 & 0.0000\\\bottomrule
+\end{tabular}
+\end{center}
+The table shows calculated values with $L_{\rm approx}/L_0=\cos45^\circ/\cos\delta$ and $\Delta L=L_{\rm geo}-L_{\rm approx}$. The width discrepancy is large near $20^\circ$ and vanishes at $0^\circ$, qualitatively consistent with the metric curves.
+
+\section{Next verification}
+Measure the widths of the Original and transformed triangles at the same observation plane using the same boundary criterion. Compare both measured series with the first-order prediction for all 45 targets from $44^\circ$ to $0^\circ$, using the input width at $45^\circ$ as the magnification reference. The hypothesis uses a local approximation near the frequency origin. Propagation, bandwidth truncation, interpolation, and phase have yet to be isolated, so the cause remains to be tested.
+\end{document}

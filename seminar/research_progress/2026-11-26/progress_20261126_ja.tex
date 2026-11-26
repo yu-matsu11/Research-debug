@@ -1,0 +1,44 @@
+\documentclass[a4paper,10pt]{ltjsarticle}
+\usepackage[margin=20mm]{geometry}
+\usepackage{amsmath,booktabs}
+\title{研究進捗：初期物体角と投影幅の不一致}
+\author{}
+\date{2026年11月26日}
+\begin{document}
+\maketitle
+\section{観察と仮説}
+11月24日の報告書（5、6ページ）では、物体角度45度のOriginalを固定入力とし、各出力角度への変換を独立に行った。FFT振幅の斜め成分は44度ではOriginalに近く、30度では方向が異なる。0度では方向は比較的近いが、一部の周波数成分が弱い。PSNRとSSIMは中間角度で低下し、0度付近で回復した。
+
+ホログラム面は基準面にあり、実装で $R_1=I$ とすることと整合する。一方、入力波面は45度傾いた物体から生成されている。平面間の変換に使う相対角だけでは、物体の初期傾斜に依存する投影幅の変化を再現できない可能性がある。
+
+\section{投影幅と実装の一次近似}
+正面時の横幅を $L_0$、初期物体角を $\theta_0=45^\circ$、出力角を $\theta=\theta_0+\delta$ とする。幾何学的投影幅は $L_0\cos\theta$ である。実装の参照座標と原点での微分を並べると、次のようになる。
+
+\begin{align}
+M_{\rm geo} &= \frac{\cos(\theta_0+\delta)}{\cos\theta_0}
+             =\cos\delta-\tan\theta_0\sin\delta,\\
+U_p &= U-\lambda^{-1}\sin\delta,\quad
+W_p=\sqrt{\lambda^{-2}-U_p^2-V^2},\\
+\alpha &= U_p\cos\delta+W_p\sin\delta,\\
+\left.\frac{\partial\alpha}{\partial U}\right|_{(0,0)}
+ &=\left.\left(\cos\delta-\sin\delta\,\frac{U_p}{W_p}\right)\right|_{(0,0)}
+ =\frac{1}{\cos\delta}.
+\end{align}
+今回の角度範囲では原点で $W_p=\cos\delta/\lambda$、$\alpha=0$ である。$\alpha\simeq U/\cos\delta$ と一次近似すると、フーリエ変換のスケーリング則から $M_{\rm approx}\simeq1/\cos\delta$ となる。45度から30度では、幾何学的投影の拡大率は1.2247、実装の一次近似は1.0353である。
+
+\begin{center}
+\begin{tabular}{rrrr}\toprule
+$\theta$ (deg) & $L_{\rm geo}/L_0$ & $L_{\rm approx}/L_0$ & $\Delta L/L_0$\\\midrule
+45 & 0.7071 & 0.7071 & 0.0000\\
+40 & 0.7660 & 0.7098 & 0.0562\\
+30 & 0.8660 & 0.7321 & 0.1340\\
+20 & 0.9397 & 0.7802 & 0.1595\\
+10 & 0.9848 & 0.8632 & 0.1216\\
+0  & 1.0000 & 1.0000 & 0.0000\\\bottomrule
+\end{tabular}
+\end{center}
+表は理論値であり、$L_{\rm approx}/L_0=\cos45^\circ/\cos\delta$、$\Delta L=L_{\rm geo}-L_{\rm approx}$ とした。幅の差が20度付近で大きく、0度で解消する傾向は評価曲線と定性的に整合する。
+
+\section{次の検証}
+同一の観測面と輪郭抽出基準で、Originalと変換結果の横幅を測定する。44度から0度の全45条件について両者の実測幅と一次近似幅を比較し、45度の入力幅を基準に倍率も確認する。この仮説は原点近傍の近似に基づく。伝搬、帯域制限、補間および位相の寄与は切り分けていないため、原因の確定には実測が必要である。
+\end{document}

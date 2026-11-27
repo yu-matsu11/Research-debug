@@ -1,0 +1,46 @@
+\documentclass[a4paper,10pt]{ltjsarticle}
+\usepackage[margin=20mm]{geometry}
+\usepackage{amsmath}
+\title{研究進捗：キャリアの基準方向と光波の回転}
+\author{}
+\date{2026年11月27日}
+\begin{document}
+\maketitle
+\section{局所軸を基準とする従来の変換}
+従来の傾斜平面間変換では、各面の局所軸に沿うキャリア
+$C_1=e^{\mathrm{i}2\pi z_1/\lambda}$、$C_2=e^{\mathrm{i}2\pi z_2/\lambda}$を用いる。
+$z_1=a_3x_0+a_6y_0+a_9z_0$、$z_2=b_3x_0+b_6y_0+b_9z_0$より、
+基準面上での横周波数シフトはそれぞれ
+$(a_3,a_6)/\lambda$と$(b_3,b_6)/\lambda$になる。
+第1のキャリアを除き、第2のキャリアを加える座標式には、
+\[
+ (\Delta u,\Delta v)=\lambda^{-1}(b_3-a_3,\ b_6-a_6)
+\]
+が現れる。キャリアは波面を記述するときの基準であり、個々の平面波成分にはそれぞれの伝搬方向がある。
+
+\section{ホログラム面と物体姿勢}
+$R_1=I$なら$z_1=z_0$かつ$a_3=a_6=0$であり、入力側の横方向キャリアシフトはゼロになる。
+入力の複素振幅は$z_0=0$面に保存されているが、元の物体は45度傾いている。
+記録面と物体姿勢は別々の条件であり、記録面の位置だけから、複素振幅の生成時に用いたキャリア規約は決まらない。
+11月26日に検討した投影幅の不一致との関係を調べるには、Original生成時の位相因子と実装のキャリア規約を照合する必要がある。
+
+\section{共通キャリアに対する能動回転}
+入出力を共に$C=e^{\mathrm{i}2\pi z_0/\lambda}$で表し、
+物理的な空間周波数ベクトルを$\boldsymbol q$、基準を
+$\boldsymbol q_c=\hat{\boldsymbol z}_0/\lambda$とする。
+キャリアからの偏差を$\boldsymbol\kappa=\boldsymbol q-\boldsymbol q_c$と定義すると、
+光波の能動回転$\boldsymbol q_{\rm out}=R\boldsymbol q_{\rm in}$に対して
+\[
+ \boldsymbol\kappa_{\rm out}
+ =R\boldsymbol\kappa_{\rm in}+(R-I)\boldsymbol q_c
+\]
+となる。入出力の基準キャリアを共通にしても、回転した光波のスペクトル中心は一般に移動する。
+数値補間で出力格子から入力の参照座標を求める場合は、物理周波数に$R^{\mathsf T}$を適用し、
+採用する伝搬枝と横周波数写像のヤコビアンを確認する。
+
+\section{次の検証}
+まず、Original生成時の照明・位相因子を確認する。
+そのうえで、45度の光波全体を回転させる条件と、照明・観測面を固定して物体だけを30度に回して再生成する条件を定式化する。
+両条件の関係を整理した後、同じ観測面でスペクトル中心、斜め成分の方向、三角形の投影幅を比較する。
+現段階では、キャリア規約の違いが既存の誤差にどの程度寄与するかは未検証である。
+\end{document}

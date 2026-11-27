@@ -1,0 +1,71 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage{amsmath,booktabs}
+\title{Open Questions on Rotation-Compensated Holograms}
+\author{}
+\date{November 27, 2026}
+\begin{document}
+\maketitle
+\section{Questions to address first}
+\subsection*{1. Can the initial tilt be treated as zero?}
+A complex hologram generated from a tilted polygon is defined on the global plane $z_0=0$. Does the orientation of this recording plane justify setting $R_1=I$ in the transformation? Where is the object's initial tilt represented in the input field and in the transformation?
+
+\subsection*{2. Which axis should define the carrier direction?}
+The original derivation uses carriers along $z_1$ for $P_1\to P_0$ and along $z_2$ for $P_0\to P_2$. For the present objective, where the hologram plane is fixed, would a common carrier along the global $z_0$ axis be more appropriate?
+
+\subsection*{3. Is the carrier shift handled consistently?}
+The direct transformation contains the transverse carrier differences
+\[
+ (b_3-a_3)/\lambda,\qquad (b_6-a_6)/\lambda.
+\]
+Setting $R_1=I$ gives $a_3=a_6=0$. Is this input carrier convention consistent with the phase definition used to generate the hologram of the tilted polygon?
+
+\subsection*{4. When is a tilted-plane transformation equivalent to object rotation?}
+The derivation transforms the angular spectrum between tilted planes. The objective is to generate a hologram of a rotated object on a fixed recording plane. Under what conditions are these operations mathematically and physically equivalent, given the illumination, carrier direction, center of rotation, and propagation conditions?
+
+\subsection*{5. Can the mapping be expressed using only the relative rotation?}
+The direct formula contains coefficients $a_i,b_i$ from $R_1$ and $R_2$. Can the carrier shifts and the square-root terms for the longitudinal spatial frequency be expressed using $R_\Delta=R_2R_1^{\mathsf T}$ alone? What additional information, such as the orientations relative to the global axis, is needed?
+
+\subsection*{6. What was the purpose of combining the two transformations?}
+When $R_1=I$, the coordinate mapping $P_1\to P_0\to P_2$ reduces to $P_0\to P_2$. Under which experimental conditions or future applications is the general formula including $P_1\to P_0$ needed?
+
+\subsection*{8. Why do the oblique FFT features differ in slope?}
+For a nominal $45^\circ$ to $30^\circ$ transformation, an oblique feature in the FFT magnitude has a different slope from the corresponding feature of the $30^\circ$ Original. How can we distinguish interpolation error from a difference introduced by the frequency coordinate mapping?
+
+\subsection*{9. Why do the triangle widths differ?}
+For initial object angle $\theta_0$ and relative angle $\delta$, geometric projection and the first-order expansion of the implemented map near the frequency origin give
+\[
+ M_{\mathrm{original}}=\frac{\cos(\theta_0+\delta)}{\cos\theta_0},
+ \qquad M_{\mathrm{transform}}\simeq\frac{1}{\cos\delta}.
+\]
+For $45^\circ$ to $30^\circ$, these factors are $1.2247$ and $1.0353$, respectively. Can this difference explain the discrepancy in triangle shape and FFT slope? How does it relate to the absence of an explicit initial object angle in the mapping? This hypothesis rests on a local approximation. A rigorous derivation and comparison with measured widths are still pending.
+
+\section{Future research questions}
+\subsection*{12. Can the transformation work without an explicit initial object angle?}
+Given a precomputed complex hologram and the relative rotation $\delta$, can we obtain
+\[
+ H_{\theta_0+\delta}=T_\delta[H_{\theta_0}]
+\]
+for arbitrary initial object angle $\theta_0$? Under what conditions is the information in the complex field sufficient, and when is additional information about object pose required?
+
+\subsection*{13. Can a single transformation handle multiple polygons?}
+For a composite hologram $H=\sum_{i=1}^{N}H_i$, a common linear operator would satisfy
+\[
+ T_\delta[H]=T_\delta\!\left[\sum_{i=1}^{N}H_i\right]
+             =\sum_{i=1}^{N}T_\delta[H_i].
+\]
+Under what conditions can the same operator produce the rotated contribution of each polygon without consulting its vertices, initial tilt, or depth? Changes in occlusion are a separate topic for future work.
+
+\section{Order of investigation}
+\begin{center}
+\begin{tabular}{@{}llp{.61\linewidth}@{}}
+\toprule
+Category & Questions & Focus\\\midrule
+Theory & 1--6 & Initial orientation, carrier conventions, equivalence, and scope of the general formula\\
+Experimental checks & 8, 9 & Oblique FFT features and projected triangle widths\\
+Future research & 12, 13 & Rotation without explicit initial pose and application to multiple polygons\\
+\bottomrule
+\end{tabular}
+\end{center}
+Clarify the theoretical assumptions first, then compare their predictions with the FFT and width results. Use those checks to guide the investigation of initial-angle-independent and multi-polygon transformations.
+\end{document}
